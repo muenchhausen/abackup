@@ -1,20 +1,64 @@
-# abackup - Apraxos Backup
+= abackup - Apraxos Backup
+
+== Anforderungen und Ziele
+
+- Sicherung vor Apraxos Updates
+- Konsistente Sicherung
+- Überprüfbare Backups (Zeitstempel, Fehlerlogs)
+- Tägliche Sicherung
+- Bereitstellung verschiedener paraller Stände zu Recherche Zwecke
+- Schutz vor Verschlüsselungstrojanern
+- Berücksichtung von Brandabschnitten
+- Berücksichtigung von Archivierungsrichtlinien 
+
+== Lösungsstrategie
+
+- Backup Script muss unabhägig von Apraxos sein
+- Die Konfiguration sollte zwischen Backup Skript und Apraxos geteilt sein 
+- Die Backup Konfiguration muss anpassbar bleiben
+- Optionale Einbindung von NAS Systemen
+- Optionale Einbindung von externen verschlüsselten Speichermedian wie USB Festplatten
+
+== Implementierungsideen
+
+- ebenso könnte eine Sicherung auf einen häuslichen Rechner über das Internet laufen, verschlüsselte Übertragung vorausgesetzt. 
+- rsync nutzen
+- Nutzung von Hardlinks um Platz zu sparen
+- Auf NAS: Nutzung von Snapshots um Platz zu sparen
+- integrierbar in Apraxos, da Apraxos am besten weiss, wann eine Sicherung geschrieben werden kann
+- integrierbar als cron job
+- USB Festplatten im Rotationsprinzip nutzen: Sicherheit bei Brand und Diebstahl bieten nur 1-5 USB-Festplatten, bei Bedarf auch 
+verkryptet, die nach dem Rotationssystem benutzt werden und jeweils mit nach Hause 
+genommen werden.
+- backup-timestamp die apw.ini und kann vom START-Programm dort ausgelesen werden.
+- find /pfad/zu/praxisdaten -newer /tmp/backup_timestamp ...könnte überprüft werden, ob es zu sichernde Änderungen gibt.
+- backup_timestamp auf die Liste der ausgeschlossenen (--exclude=...) Dateien setzen
+- Speicherort von backup_timestamp konfiguierbar
+- es gibt im apraxos-Hauptverzeichnis eine Datei backup.cfg, in der die verschiedensten 
+Konfigurationsmöglichkeiten hinterlegt werden können. 
+Diese Datei kann sowohl von einem Shell-Skript von einem anderen Rechner aus genutzt 
+werden, oder von einem Shell-Skript, das als cron-Job läuft. Es kann aber auch aus apraxos 
+heraus
+
+1. konfiguriert werden
+2. aus apraxos heraus für eine manuelle Sicherung aufgerufen werden.
+
+(Das ist für die Anwender, die keine komplexen Sicherungskonstruktionen wollen und den 
+Server auch nicht über Nacht durchlaufen lassen).
+In der Sicherung wird das Datum der letzten Sicherung hinterlegt. Das Update-Programm 
+kontrolliert, ob eine Sicherung durchgeführt wurde und führt eine Sicherung durch, falls 
+keine aktuelle Sicherung gelaufen ist.
+- Eine Sicherung in eine Cloud wäre auch möglich. Das Hochladen muss natürlich 
+verschlüsselt passieren. Bei einer Cloud besteht grundsätzlich das Problem, dass man 
+womöglich nicht mehr an die Daten kommt, wenn der Cloud-Betreiber Pleite macht und 
+einfach der Stöpsel gezogen wird. Und man weiss nie, ob die NSA nicht auch mitliest .
 
 
 [source,ruby]
 ----
 
-source backup.cfg
- 
-mkdir -p $sourcefolder $destfolder $logfolder
+# test abackup.sh:
+abackup_test.sh
 
-echo test1 > $sourcefolder/test1.txt
-echo test2 > $sourcefolder/test2.txt
-
-./abackup.sh run
-
-
-
-rm -rf $sourcefolder $destfolder $logfolder
 ----
 
